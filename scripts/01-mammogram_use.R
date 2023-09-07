@@ -19,7 +19,7 @@ library(kableExtra)
 library(scales)
 
 #read my dataset
-chs_df <- read_sas(here::here('data/chs2019_public.sas7bdat'))
+chs_df <- haven::read_sas(here::here('data/chs2019_public.sas7bdat'))
 
 # explore variables of interest & remove those whose responses are not applicable
 # based on codebook

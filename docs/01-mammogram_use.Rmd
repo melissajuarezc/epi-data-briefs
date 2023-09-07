@@ -1,0 +1,133 @@
+---
+title: "Epi Data Brief"
+subtitle: "Social Determinants of Mammogram Use Among New York City Women"
+author: "Melissa Juarez"
+date: "November 21, 2022"
+output:
+  html_document:
+    theme: lumen
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	error = F,
+	message = FALSE,
+	warning = FALSE,
+	fig.align = "center"
+)
+ 
+options(scipen=999)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggthemes)
+library(plotly)
+
+# load data
+source(here::here("scripts/01-mammogram_use.R"))
+```
+
+Breast cancer is the second leading cause of cancer death and the second most common form of cancer among women. In New York City alone, around 970 people die from breast cancer each year[^1]. Early detection for breast cancer through mammograms is an effective way to reduce the likelihood of getting breast cancer, and screenings are recommended for women ages 40 and up. Most insurances cover mammogram screenings for free, and the New York State Cancer Services Program[^2] offers free screenings for uninsured, eligible New Yorkers. Due to the history of racial and ethnic discrimination in the US, which in part relates to economic instability and limited healthcare access among certain groups, there are differences in experiences receiving preventative healthcare screenings. Using data from the 2019 NYC Community Health Survey (CHS), this brief examines the differences in mammogram use across different races and ethnicities among women over 40 years old in New York City (NYC). Additionally, it considers the impact of access to a Primary Care Provider (PCP) on mammogram use among women over 40 years old in NYC. Specifically, it focuses on understanding the association between preventative healthcare screenings and social determinants including structural racial inequalities and healthcare access.
+
+[^1]: *Breast Cancer, NYC Department of Health. <https://www.nyc.gov/site/doh/health/health-topics/breast-> cancer.page#:\~:text=Breast%20cancer%20is%20the%20second%2Dleading%20cause%20of%20cancer%20death,6%2C300%20women%20are%20newly%20diagn osed (accessed Nov 21, 2022).*
+
+[^2]: *New York State Cancer Services Program, NYS Department of Health. <https://www.health.ny.gov/diseases/cancer/services/> (accessed Nov 21, 2022).*
+
+### [ Women over 40 in NYC report varying experiences regarding mammogram use, access to a PCP, and racial and ethnic identity. ]{style="color: #0492C2"}
+
+-   50% of the 3,283 women over 40 report obtaining a mammogram within the past year while the other 50% of women over 40 report not obtaining one.
+
+-   An overwhelming majority of women over 40 have access to one or more PCPs (92.6%), whereas 7.4% do not have access to a PCP.
+
+-   Women over 40 were more likely to be White, non-Hispanic (35.0%), compared to other racial and ethnic groups: Hispanic (26.7%), Black non-Hispanic (25.5%), Asian and Pacific Islander non-Hispanic (9.6%), other non-Hispanic (2.8%), and North African/Middle Eastern non-Hispanic (0.5%).
+
+-   The largest group of women over 40 were between 45-64 years old (48.0%), followed by 65+ years old (39.4%) and 40-44 years old (12.5%).
+
+-   The largest group among people who do not have a PCP are Hispanic women, whereas the largest group among people who do have a PCP are White non-Hispanic women; 10.8% of Hispanic women over 40 do not have a PCP, 3% higher than the next largest group
+
+### [ White, non-Hispanic women over 40 make up the largest group of those who got a mammogram. ]{style="color: #0492C2"}
+
+```{r}
+
+pop1 <- pop %>% 
+  select(newrace6, mammogram1yr19) %>%
+  rename(Race = newrace6,
+         "Obtained Mammogram" = mammogram1yr19) 
+
+tabyl(pop1, Race, `Obtained Mammogram`, show_na = FALSE) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting(digits = 1) %>%
+  adorn_ns %>%
+  adorn_title("combined") %>%
+  knitr::kable(format = "html", caption = 'White, non-Hispanic women make up the largest groups for those
+               who did and did not receive a mammogram.') %>%
+  kableExtra::kable_styling()
+```
+
+-   The largest groups who get mammograms among women over 40 are White, non- Hispanics (34%), Hispanics (28%), and Black Non-Hispanics (26.4%)
+
+-   Among Asian/Pacific Islander, non-Hispanic women over 40, most of them (54.5%) have not received a mammogram within the past year.
+
+-   Most other groups experienced an opposite effect: the majority of respondents within a racial group were more likely to have received a mammogram than not, even if by a small margin.
+
+### [ Most women over 40 who have a PCP have received a mammogram within the past year. ]{style="color: #0492C2"}
+
+-   For women over 40 who do have a PCP (n = 2991), 48.3% report not having a mammogram within the past year, while 51.7% report having obtained one.
+
+-   68.9% of women over 40 who do not have a PCP (n = 241) report not having a mammogram within the past year, while 31.1% report having obtained one.
+
+-   When women over 40 had access to a PCP, their likelihood of getting a mammogram increased by \~20%, from 31.1% to 51.7% likelihood of obtaining a mammogram.
+
+```{r}
+
+pcp_mamm <- data.frame(table(pop$mammogram1yr19, pop$pcp19))
+pcp_mamm <- pcp_mamm %>% 
+  #filter(Var1 == 'Yes') %>% 
+  mutate(percent = case_when(
+    ## percentages have the mammogram sample size by response in denominator
+    Var2 == "No" ~ round(Freq/241*100, digits = 1),
+    Var2 == "Yes" ~ round(Freq/2991*100, digits = 1)
+  )) %>% 
+  rename(
+    `Obtained Mammogram` = Var1,
+    `Have PCP` = Var2,
+    Percent = percent
+  )
+
+# creating plot using the above data
+p <- ggplot(pcp_mamm, aes(`Have PCP`, Percent, fill = `Obtained Mammogram`)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Healthcare Inequity: Those who have a PCP are more 
+       likely to have obtained a mammogram.") +
+  ggthemes::theme_hc() +
+  scale_fill_manual(values = c("#003f5c", "#00aecb")) +
+  theme(legend.position = "right", text = element_text(family = "Microsoft Sans Serif")) +
+  theme(axis.ticks.x = element_line(size = 1), axis.ticks.length=unit(0.2,"cm")) 
+
+ggplotly(p)
+
+```
+
+### [ Implications ]{style="color: #0492C2"}
+
+These data highlight the importance of access to a Primary Care Physician (PCP) as a determining factor for mammogram use for women over the age of 40. For women who do have a PCP, they are more likely to receive this preventative cancer screening, and thus be in a better position for early detection and treatment should they develop breast cancer. Here, we see just how impactful healthcare access and quality is for affecting mammogram use outcomes. When an individual is in contact with a healthcare professional, they are more likely to seek screening. Additionally, although White, non-Hispanic women over 40 make up the largest group of those who obtained a mammogram, this is not a strikingly different outcome than the demographics of New York City as a whole; the same can be said for the other racial and ethnic groups, whose makeup roughly mirrors the makeup of the city. Through this, we can gather that the mammogram outcome is not generally disproportionately present among certain groups. In other words, one's access to a PCP is potentially more influential for mammogram use outcomes than their racial and ethnic identity. Still, we should remain aware of the structural barriers due to one's race and economic status that affect their access to quality, preventative healthcare practices. More specifically, Hispanic women are the most likely group (among women over 40) to be affected disproportionately in not having a PCP, compared to other groups, whether due to cultural, language, or economic barriers[^3].
+
+[^3]: *Funk, C.; Lopez, M. H. 2. Hispanic Americans' experiences with Health Care. <https://www.pewresearch.org/science/2022/06/14/hispanic-americans-experiences-> with-health-care/ (accessed Nov 21, 2022).*
+
+To that end, there is more to be explored in efforts to increase healthcare access overall, not just for preventative health screening measures. In the meantime, initiatives like New York State Cancer Services Program aims to reduce economic strain by providing free screenings for New Yorkers who do not have health insurance and meet income eligibility requirements.
+
+#### [ Definitions ]{style="color: #0492C2"}
+
+-   **Race/Ethnicity**: For the purposes of obtaining sufficient subgroup sizes, the categories of race are defined as described in Figure 1. However, we recognize that the goal of sufficient sample size erases the experiences of people at the intersection of various racial and ethnic identities, since they can only be categorized under one identity.
+
+-   **Women**: Women here refers to the subset of women who are cis-gendered, people assigned female at birth, given that they are at higher risk for breast cancer than people assigned male at birth. However, I recognize that there are women who were assigned male at birth.
+
+-   **Primary Care Provider**: PCP refers to a person the participant considers to be their personal doctor or health care provider. In general, this is a healthcare practitioner who practiced general medicine and is the go-to person for a patient with health concerns.
+
+-   **Mammogram Use**: this term defines a participant's obtaining of a mammogram, an X-ray picture of a breast that doctors use to look for early signs of breast cancer.
+
+-   **"Within the past year"**: Respondents were asked to specify whether they "Had [a] mammogram less than one year ago?". Thus, this phrasing is meant to indicate mammogram use within one year prior of taking the CHS in 2019 and not necessarily indicating mammogram use within 1 year prior of present day.
