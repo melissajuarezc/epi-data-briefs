@@ -7,14 +7,21 @@ output:
   html_document:
     theme: lumen
 ---
+```{css, echo=FALSE}
+.center {
+  display: table;
+  margin-right: auto;
+  margin-left: auto;
+}
+```
 
 ```{r setup, include = F}
 knitr::opts_chunk$set(
 	echo = FALSE,
 	error = F,
+	fig.align = "center",
 	message = FALSE,
-	warning = FALSE,
-	fig.align = "center"
+	warning = FALSE
 )
  
 options(scipen=999)
@@ -36,7 +43,7 @@ Breast cancer is the second leading cause of cancer death and the second most co
 
 [^2]: *New York State Cancer Services Program, NYS Department of Health. <https://www.health.ny.gov/diseases/cancer/services/> (accessed Nov 21, 2022).*
 
-### [ Women over 40 in NYC report varying experiences regarding mammogram use, access to a PCP, and racial and ethnic identity. ]{style="color: #0492C2"}
+### [Women over 40 in NYC report varying experiences regarding mammogram use, access to a PCP, and racial and ethnic identity.]{style="color: #0492C2"}
 
 -   50% of the 3,283 women over 40 report obtaining a mammogram within the past year while the other 50% of women over 40 report not obtaining one.
 
@@ -48,7 +55,7 @@ Breast cancer is the second leading cause of cancer death and the second most co
 
 -   The largest group among people who do not have a PCP are Hispanic women, whereas the largest group among people who do have a PCP are White non-Hispanic women; 10.8% of Hispanic women over 40 do not have a PCP, 3% higher than the next largest group
 
-### [ White, non-Hispanic women over 40 make up the largest group of those who got a mammogram. ]{style="color: #0492C2"}
+### [White, non-Hispanic women over 40 make up the largest group of those who got a mammogram.]{style="color: #0492C2"}
 
 ```{r}
 
@@ -74,7 +81,7 @@ tabyl(pop1, Race, `Obtained Mammogram`, show_na = FALSE) %>%
 
 -   Most other groups experienced an opposite effect: the majority of respondents within a racial group were more likely to have received a mammogram than not, even if by a small margin.
 
-### [ Most women over 40 who have a PCP have received a mammogram within the past year. ]{style="color: #0492C2"}
+### [Most women over 40 who have a PCP have received a mammogram within the past year.]{style="color: #0492C2"}
 
 -   For women over 40 who do have a PCP (n = 2991), 48.3% report not having a mammogram within the past year, while 51.7% report having obtained one.
 
@@ -82,6 +89,7 @@ tabyl(pop1, Race, `Obtained Mammogram`, show_na = FALSE) %>%
 
 -   When women over 40 had access to a PCP, their likelihood of getting a mammogram increased by \~20%, from 31.1% to 51.7% likelihood of obtaining a mammogram.
 
+<div class = 'center'>
 ```{r}
 
 pcp_mamm <- data.frame(table(pop$mammogram1yr19, pop$pcp19))
@@ -111,8 +119,9 @@ p <- ggplot(pcp_mamm, aes(`Have PCP`, Percent, fill = `Obtained Mammogram`)) +
 ggplotly(p)
 
 ```
+</div>
 
-### [ Implications ]{style="color: #0492C2"}
+### [Implications]{style="color: #0492C2"}
 
 These data highlight the importance of access to a Primary Care Physician (PCP) as a determining factor for mammogram use for women over the age of 40. For women who do have a PCP, they are more likely to receive this preventative cancer screening, and thus be in a better position for early detection and treatment should they develop breast cancer. Here, we see just how impactful healthcare access and quality is for affecting mammogram use outcomes. When an individual is in contact with a healthcare professional, they are more likely to seek screening. Additionally, although White, non-Hispanic women over 40 make up the largest group of those who obtained a mammogram, this is not a strikingly different outcome than the demographics of New York City as a whole; the same can be said for the other racial and ethnic groups, whose makeup roughly mirrors the makeup of the city. Through this, we can gather that the mammogram outcome is not generally disproportionately present among certain groups. In other words, one's access to a PCP is potentially more influential for mammogram use outcomes than their racial and ethnic identity. Still, we should remain aware of the structural barriers due to one's race and economic status that affect their access to quality, preventative healthcare practices. More specifically, Hispanic women are the most likely group (among women over 40) to be affected disproportionately in not having a PCP, compared to other groups, whether due to cultural, language, or economic barriers[^3].
 
@@ -120,7 +129,7 @@ These data highlight the importance of access to a Primary Care Physician (PCP) 
 
 To that end, there is more to be explored in efforts to increase healthcare access overall, not just for preventative health screening measures. In the meantime, initiatives like New York State Cancer Services Program aims to reduce economic strain by providing free screenings for New Yorkers who do not have health insurance and meet income eligibility requirements.
 
-#### [ Definitions ]{style="color: #0492C2"}
+#### [Definitions]{style="color: #0492C2"}
 
 -   **Race/Ethnicity**: For the purposes of obtaining sufficient subgroup sizes, the categories of race are defined as described in Figure 1. However, we recognize that the goal of sufficient sample size erases the experiences of people at the intersection of various racial and ethnic identities, since they can only be categorized under one identity.
 
