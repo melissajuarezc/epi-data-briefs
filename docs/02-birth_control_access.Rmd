@@ -1,0 +1,185 @@
+---
+title: "Epi Data Brief"
+subtitle: "Social Determinants of Birth Control Use Among NYC Women"
+author: "Alexa Chan, Catherine Flores, Jessica De Rocco, Melissa Juarez"
+date: "December 20, 2022"
+output:
+  html_document:
+    theme: lumen
+---
+```{css, echo=FALSE}
+.center {
+  display: table;
+  margin-right: auto;
+  margin-left: auto;
+}
+```
+
+```{r setup, include = F}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	error = F,
+	fig.align = "center",
+	message = FALSE,
+	warning = FALSE
+)
+ 
+options(scipen=999)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggthemes)
+library(plotly)
+
+# load data
+source(here::here("scripts/02-birth_control_access.R"))
+```
+
+Birth control is defined as any method, medicine, or device used to prevent pregnancy^[*Office on Women’s Health, “Birth Control Methods.” US Department of Health and Human Services. Retrieved from: https://www.womenshealth.gov/a-z-topics/birth-control-methods*]. Although there are many different kinds of birth control, they can be grouped into two broad categories: short- term and long-term. Short-term birth control includes the pill, patch, and vaginal rings whereas long- term birth controls include sterilization, implants, and IUDs^[*Ibid*]. While all methods are effective in preventing pregnancy, there is little information available regarding the women who use these kinds of contraception. Using data from the 2019 NYC Community Health Survey (CHS)^[*Community Health Survey. Community health survey - NYC health, available at https://www.nyc.gov/site/doh/data/data-sets/community-health-survey.page.*], this brief aims to examine the differences in birth control usage by race and ethnicity among women ages 25-44 in NYC. Additionally, it targets the associations between income and length of birth control usage (short-term vs long-term) differ by race and ethnicity, with a specific focus on the social determinants of health, including structural racism and economic inequities. In doing so, this study can provide more clarity on the target population, which will inform the efficacy of programs like Planned Parenthood and NYC Health Sexual Health Clinics, which provide low-cost services, including contraception.^[*Sexual Health Clinics. NYC Health. (available at https://www.nyc.gov/site/doh/services/sexual-health-clinics.page)*] Our sample included 1345 observations, where we subsetted for women among the ages of 25-44 who were sexually active and had at least one partner of the opposite sex.
+
+
+### [Women ages 25-44 report varying experiences regarding birth control use, racial and ethic identity, and income.]{style="color: #0492C2"}
+
+
+```{r table-one}
+a
+```
+
+-   Prevalence of Outcome: Overall, 55.6% of women used birth control (including condoms) at the last time of vaginal sex, whereas 44.4% did not use any form of contraception.
+
+-   Prevalence of Exposure: The largest racial identity in our sample was Hispanic identity (35.2%), followed by White Non-Hispanic, Black N-H, and Asian/Pacific Islander N-H.
+
+-   Only 1.2% of women identified as North African/Middle Eastern, and 2.5% as Other Non-Hispanic.
+
+-   Overall, 55.8% of women ages 25-44 had an income at or above the federal poverty line.
+
+-   Missingness: Out of 1345 observations, 44 (3.3%) observations for birth control type were categorized as N/A or missing. There was no missingness for the other variables.
+
+### [Asian women used contraception at the highest percentage.]{style="color: #0492C2"}
+
+<div class = 'center'>
+```{r}
+
+## turning our output above into a dataframe to feed into a ggplot for our bar graphs
+bcbin_race <- table(pop$newrace6, pop$bcbinary)
+bcbin_race <- bcbin_race %>% 
+  data.frame %>% 
+  #filter(Var1 == 'Yes') %>% 
+  mutate(percent = case_when(
+    Var1 == "Asian/PI" ~ round(Freq/sum(bcbin_race[1,])*100, digit = 1),
+    Var1 == "Black" ~ round(Freq/sum(bcbin_race[2,])*100, digit = 1),
+    Var1 == "Hispanic" ~ round(Freq/sum(bcbin_race[3,])*100, digit = 1),
+    Var1 == "N. African/Middle Eastern" ~ round(Freq/sum(bcbin_race[4,])*100, digit = 1),
+    Var1 == "Other" ~ round(Freq/sum(bcbin_race[5,])*100, digit = 1),
+    Var1 == "White" ~ round(Freq/sum(bcbin_race[6,])*100, digit = 1),
+  )) %>% 
+  rename(
+    `Birth Control Use` = Var2,
+    `Race/Ethnicity` = Var1,
+    Percent = percent
+  )
+
+p1 <- ggplot(bcbin_race, aes(`Race/Ethnicity`, Percent, fill = `Birth Control Use`)) +
+  geom_bar(stat="identity", position = "dodge") +
+  labs(title="Asian women use contraception in the highest percentages, 
+       followed by White, non-Hispanic women.") +
+  ggthemes::theme_hc() +
+  scale_fill_manual(values = c("#003f5c", "#00aecb")) +
+  theme(legend.position = "right", text = element_text(family = "Microsoft Sans Serif")) +
+  theme(axis.ticks.x = element_line(size = 1), axis.ticks.length=unit(0.2,"cm")) 
+
+ggplotly(p1, width = 1000, height = 500)
+
+```
+</div>
+
+-   Over 60% of Asian/PI women used contraception at time of last vaginal sex.
+
+-   58% of White women used contraception at time of last vaginal sex.
+
+-   North African and Middle Eastern women had the least usage, with 60% not having used contraception at time of last sex.
+
+-   Black women, Hispanic women, and other/non-Hispanic women had similar rates of contraception use, with just over the majority having used contraception.
+
+-   N. African/Middle Eastern women and women of other races had the least number of observations.
+
+#### Analytical Interpretation
+
+A Chi-square test run on birth control usage and race indicated that there was no compelling statistical evidence that there was a significant relationship between the two variables. The p-value was 0.1617, higher than the threshold value of .05 that would suggest that these variables are dependent. Results should be interpreted cautiously, as the sample sizes were not equal across the subsets. For example, there were only 15 observations for North African and Middle Eastern women, while there were over 450 observations for Hispanic women. See below:
+
+```{r chi-square}
+chisq.test(data)
+```
+
+
+### [Short-lasting contraception more common than long-lasting contraception across race and income.]{style="color: #0492C2"}
+
+<div class = 'center'>
+```{r}
+
+xyz <- table(pop$imputed_pov200, pop$bclength, pop$newrace6)
+xyz <- xyz %>% 
+  data.frame %>% 
+  rename(
+    `Income Level` = Var1,
+    `Birth Control Length` = Var2,
+    Race = Var3, 
+    Percent = Freq
+  )
+
+p2 <- ggplot(xyz, aes(fill=`Birth Control Length`, y=Percent, x=`Income Level`)) + 
+  geom_bar(position="fill", stat="identity") +
+  labs(title="Short-lasting birth control is more common than long-lasting birth control") +
+  facet_grid(~ Race) +
+  ggthemes::theme_hc() +
+  scale_fill_manual(values = c("#003f5c", "#00aecb")) +
+  theme(legend.position = "right", text = element_text(family = "Microsoft Sans Serif")) +
+  theme(axis.ticks.x = element_line(size = 1), axis.ticks.length=unit(0.2,"cm")) 
+
+ggplotly(p2, width = 1000, height = 500)
+
+```
+</div>
+
+-   Overall, short-lasting contraception was more common than long-lasting contraceptives. Asian women had the highest rates of using short term contraception, regardless of income categorization, and North African/Middle Eastern women having the lowest rate, at 50%.
+
+-   For Other Non Hispanic, White, and Asian women, those under 200% FPL were more likely to use short term contraception. Rates of long lasting contraceptive use were higher among women over 200% FPL.
+
+-   Among Black and Hispanic women this trend was reversed, as women at or above 200% FPL were slightly more likely to have used long lasting contraceptive.
+
+#### Analytical Interpretation
+
+A test of heterogeneity showed that there is no compelling statistical evidence that there was a significant difference between the associations of income level and birth control length when stratified by racial and ethnic identity. The p-value for the test of heterogeneity was 0.47, higher than the threshold value of .05 that would suggest that the associations are dependent on race.
+
+```{r}
+mhor(pop, imputed_pov200, bclength, strata = newrace6, digits = 2)
+```
+
+
+
+### [Implications]{style="color: #0492C2"}
+
+These data highlight that race is not a determining factor in birth control use among women ages 25- 44. While our sample shows some differences in birth control use between races, particularly among Asian women, these differences were not statistically significant. Across most races, we saw that the majority of women used some form of contraceptive at their last time of vaginal sex, with a preference for condoms, implants/IUD, and the pill. Additionally, our data showed that race is also not a determining factor for the associations between income and birth control length. We might attribute this outcome in part to the efficacy of existing NYC health programs and insurance coverage laws. The NYC Family Planning Benefit Program ^[Family Planning Benefit Program. OCHIA (available at https://www.nyc.gov/site/ochia/coverage-care/family-planning-benefit-program.page).], for example, aims to reduce economic barriers to birth control and increase contraception access to those most impacted by economic inequality.
+
+A limitation in this study was the subset sizes for each racial category. Hispanic women saw a subset size of over 450, while N. African/Middle Eastern women saw only 15 observations; low sizes decrease confidence that our sample proportions accurately reflection the population. Thus, our chi-square tests produce wider confidence intervals for our population estimates. Another limitation is the wide age range of women 25-44. Younger women may have different reproductive care experiences than women who are older. However, the CHS dataset did not allow a smaller breakdown of this age range.
+
+These results demonstrate two domains of oppression: structural and interpersonal. Structurally, it is easier to obtain birth control and contraceptives when occupying certain spaces, including certain ages and races. Interpersonally, it would be useful to conduct future research regarding how sexual partners participate in birth control processes. This would help to determine whether women have a disproportionate burden of responsibility for reproductive care. This research also fits within the concept of co-liberation from Data Feminism, as the groups with structural power and those without both need to simultaneously work together to ensure equitable access to birth control and reproductive services.
+
+#### [Definitions]{style="color: #0492C2"}
+
+-   **Women**: For the purpose of this publication, the term 'women' is exclusive of people assigned female at birth between the ages of 25 and 44. Additionally, our brief only reports on women who have been sexually active in the last 12 months at the time of
+surveying and who have had at least 1 partner of the opposite sex in that time frame.
+
+-   **Race/Ethnicity**: For the purpose of this publication, Latino includes persons of Hispanic or Latino origin, as identified by the survey question “Are you Hispanic or Latino?” and regardless of reported race. Black, White, Asian/Pacific Islander, North African/Middle Eastern, and Other race categories exclude those who identify as Latino. We recognize this categorization erases the experiences of people at the intersection of various racial and ethnic identities.
+
+-   **Birth Control**: ^[Birth control methods. Office on Women's Health Available at: https://www.womenshealth.gov/a-z-topics/birth-control-methods.] Birth control is defined as any method, medicine, or device used to prevent pregnancy.
+
+-   **Short Lasting Birth Control**: ^[Birth control methods. Office on Women's Health Available at: https://www.womenshealth.gov/a-z-topics/birth-control-methods.] Condoms, the pill, patch, and vaginal rings not including emergency contraception.
+
+-   **Long Lasting Birth Control**: ^[Birth control methods. Office on Women's Health Available at: https://www.womenshealth.gov/a-z-topics/birth-control-methods.] Sterilization, implants, and IUDs.
+
+-   **Federal Poverty Line**: ^[2019 Poverty Guidelines. APSE. Available at: https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines/prior-hhs-poverty-guidelines-federal-register-references/2019-poverty-guidelines.] An economic measure used to decide whether the income level of an individual or family qualifies them for certain federal benefits and programs. As an example, in 2019 a family of 4 living in the 48 contiguous states would fall under 200%FPL if their income was below $51,500.
+
+

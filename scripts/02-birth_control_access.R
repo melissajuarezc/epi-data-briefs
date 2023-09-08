@@ -77,12 +77,12 @@ pop <- chs_df %>% filter(birthsex == 2) %>%
 #mutate columns to reveal categories of race & income
 pop <- pop %>%
   mutate(newrace6 = case_when(
-    newrace6 == 1 ~ 'White Non-Hispanic',
-    newrace6 == 2 ~ "Black Non-Hispanic",
+    newrace6 == 1 ~ 'White',
+    newrace6 == 2 ~ "Black",
     newrace6 == 3 ~ "Hispanic",
-    newrace6 == 4 ~ "Asian/PI Non-Hispanic",
-    newrace6 == 5 ~ "N. African/Middle Eastern, non-Hispanic",
-    newrace6 == 6 ~ "Other Non-Hispanic"
+    newrace6 == 4 ~ "Asian/PI",
+    newrace6 == 5 ~ "N. African/Middle Eastern",
+    newrace6 == 6 ~ "Other"
   )) %>%
   mutate(imputed_pov200 = case_when(
     imputed_pov200 == 1 ~ "<200% FPL",
@@ -149,12 +149,12 @@ bcbin_race <- bcbin_race %>%
   data.frame %>% 
   #filter(Var1 == 'Yes') %>% 
   mutate(percent = case_when(
-    Var1 == "Asian/PI Non-Hispanic" ~ (Freq/sum(bcbin_race[1,])*100),
-    Var1 == "Black Non-Hispanic" ~ (Freq/sum(bcbin_race[2,])*100),
+    Var1 == "Asian/PI" ~ (Freq/sum(bcbin_race[1,])*100),
+    Var1 == "Black" ~ (Freq/sum(bcbin_race[2,])*100),
     Var1 == "Hispanic" ~ (Freq/sum(bcbin_race[3,])*100),
-    Var1 == "N. African/Middle Eastern, non-Hispanic" ~ (Freq/sum(bcbin_race[4,])*100),
-    Var1 == "Other Non-Hispanic" ~ (Freq/sum(bcbin_race[5,])*100),
-    Var1 == "White Non-Hispanic" ~ (Freq/sum(bcbin_race[6,])*100),
+    Var1 == "N. African/Middle Eastern" ~ (Freq/sum(bcbin_race[4,])*100),
+    Var1 == "Other" ~ (Freq/sum(bcbin_race[5,])*100),
+    Var1 == "White" ~ (Freq/sum(bcbin_race[6,])*100),
   )) %>% 
   rename(
     BirthControlUse = Var2,
@@ -227,7 +227,6 @@ ggplot(xyz_2, aes(fill=BirthControlLength, y=Percent, x=IncomeLevel)) +
   facet_grid(~ Race) 
 
 ## test of heterogeneity
-install.packages('mStats')
 library(mStats)
 mhor(pop, imputed_pov200, bclength, strata = newrace6, digits = 2)
   ## p value is 0.47, meaning that race does not significantly affect the 
